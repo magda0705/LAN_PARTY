@@ -19,5 +19,9 @@ int main(int argc, char *argv[])
   if (task[0] == 1 && task[1] == 0) {
     afisare(lista, out);
   }
+  if (task[1] == 1) {
+    reducere_echipe(&lista, nrteams);
+    afisare(lista, out);
+  }
 return 0;
 }

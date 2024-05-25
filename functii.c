@@ -132,3 +132,149 @@ void reducere_echipe(Node **head, int nrteams) {
   // printf("%d", countNodes(*head));
 }
 
+// functie pentru crearea unei cozi
+Queue *createQueue() {
+  Queue *q;
+  q = (Queue *)malloc(sizeof(Queue));
+  if (q == NULL) return NULL;
+  q->front = q->rear = NULL;
+  return q;
+}
+
+// functie pentru adaugarea elementelor in coada
+void enQueue(Queue *q, team echipa) {
+  Node *newNode = malloc(sizeof(Node));
+  newNode->val = echipa;
+  newNode->next = NULL;
+
+  if (q->rear == NULL)
+    q->rear = newNode;
+  else {
+    q->rear->next = newNode;
+    q->rear = newNode;
+  }
+
+  if (q->front == NULL) q->front = q->rear;
+}
+
+// functie pentru afisarea continutului unei cozi
+void printQueue(Queue *queue) {
+  if (queue == NULL) {
+    printf("Queue not initialized.\n");
+    return;
+  }
+
+  Node *current = queue->front;
+  if (current == NULL) {
+    printf("Queue is empty.\n");
+  } else {
+    while (current != NULL) {
+      printf("%s\n", current->val.numele_echipei);
+      current = current->next;
+    }
+    printf("\n");
+  }
+}
+
+//functie pentru eliminarea unui element din coada
+void deQueue(Queue *queue) {
+  if (queue->front == NULL) return;
+  Node *temp = queue->front;
+  queue->front = queue->front->next;
+  if (queue->front == NULL) queue->rear = NULL;
+}
+
+//functie pentru adaugarea unui element in varful stivei
+void push(Stack **top, team team) {
+  Stack *newNode = (Stack *)malloc(sizeof(Stack));
+  newNode->val = team;
+  newNode->next = *top;
+  *top = newNode;
+}
+
+//functie pentru calcularea punctelor unei echipe
+float suma_puncte_echipa(team echipa) {
+  float sum = 0;
+
+  for (int i = 0; i < echipa.nr_jucatori; i++) {
+    sum = sum + echipa.jucatori[i].puncte;
+  }
+
+  return sum / echipa.nr_jucatori;
+}
+
+//functie pentru impartirea echipelor dupa fiecare runda in ingingatori si pierzatori
+void invingatori_pierzatori(FILE *file, Queue *queue, int runda) {
+  Stack *invingatori = NULL, *pierzatori = NULL;
+  while (queue->front != NULL) {
+    Node *prima_echipa = queue->front;
+    deQueue(queue);
+    Node *adoua_echipa = queue->front;
+    deQueue(queue);
+
+    fprintf(file, "%-33s-%33s\r\n", prima_echipa->val.numele_echipei,
+            adoua_echipa->val.numele_echipei);
+    if (suma_puncte_echipa(prima_echipa->val) >
+        suma_puncte_echipa(adoua_echipa->val)) {
+      push(&pierzatori, adoua_echipa->val);
+      push(&invingatori, prima_echipa->val);
+
+    } else if (suma_puncte_echipa(prima_echipa->val) <=
+               suma_puncte_echipa(adoua_echipa->val)) {
+      push(&pierzatori, prima_echipa->val);
+      push(&invingatori, adoua_echipa->val);
+    }
+  }
+  fprintf(file, "\r\nWINNERS OF ROUND NO:%d\r\n", runda);
+  while (invingatori != NULL) {
+    fprintf(file, "%-34s-  %.2f\r\n", invingatori->val.numele_echipei,
+            suma_puncte_echipa(invingatori->val) + runda);
+    enQueue(queue, invingatori->val);
+    invingatori = invingatori->next;
+  }
+}
+
+//functie pentru salvarea echipelor de top intr o stiva
+void saveTopTeams(Node *head, Stack **top) {
+  Stack *tempStack = NULL;
+
+  while (head != NULL) {
+    push(top, head->val);
+    head = head->next;
+  }
+
+  while (tempStack != NULL) {
+    push(top, tempStack->val);
+    tempStack = tempStack->next;
+  }
+}
+
+// functie pentru programarea meciurilor si salvarea in top 8
+void programarea_meciurilor(Node *head, int nrteams, FILE *file, Stack **top,
+                            int *runda) {
+  Queue *meciuri = createQueue();
+  Stack *invingatori = NULL, *pierzatori = NULL;
+  int nr_runde = 0;
+
+  while (head != NULL) {
+    enQueue(meciuri, head->val);
+    head = head->next;
+  }
+
+  while (nrteams / 2) {
+    nr_runde++;
+    nrteams /= 2;
+  }
+
+  for (int i = 1; i <= nr_runde; i++) {
+    fprintf(file, "\r\n--- ROUND NO:%d\r\n", i);
+    invingatori_pierzatori(file, meciuri, i);
+
+    // se salveaza top 8 echipe
+    if (i == nr_runde - 3) {
+      (*runda) = i;
+      saveTopTeams(meciuri->front, top);
+    }
+  }
+}
+
