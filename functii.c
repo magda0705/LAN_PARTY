@@ -278,3 +278,38 @@ void programarea_meciurilor(Node *head, int nrteams, FILE *file, Stack **top,
   }
 }
 
+// functie pentru insert BST
+BST *newNode(team val) {
+  BST *new = (BST *)malloc(sizeof(BST));
+  new->val = val;
+  new->left = new->right = NULL;
+  return new;
+}
+
+//functie care afiseaza BST-ul in ordine descrescatoare si salveaza echipele in stiva
+void afisareBSTDesc(BST *root, FILE *file, int runda, Stack **top) {
+  if (root != NULL) {
+    afisareBSTDesc(root->right, file, runda, top);
+    fprintf(file, "%-33s -  %.2f\r\n", root->val.numele_echipei,
+            suma_puncte_echipa(root->val) + runda);
+    push(top, root->val);
+    afisareBSTDesc(root->left, file, runda, top);
+  }
+}
+
+//functie care insereaza un nou nod in BST
+BST *insert(BST *node, team val) {
+  if (node == NULL) return newNode(val);
+
+  if (suma_puncte_echipa(val) < suma_puncte_echipa(node->val))
+    node->left = insert(node->left, val);
+  else if (suma_puncte_echipa(val) > suma_puncte_echipa(node->val))
+    node->right = insert(node->right, val);
+  else if (strcmp(val.numele_echipei, node->val.numele_echipei) > 0)
+    node->right = insert(node->right, val);
+  else
+    node->left = insert(node->left, val);
+
+  return node;
+}
+

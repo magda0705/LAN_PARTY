@@ -23,5 +23,20 @@ int main(int argc, char *argv[])
     reducere_echipe(&lista, nrteams);
     afisare(lista, out);
   }
-return 0;
-}
+  if (task[2] == 1) {
+    programarea_meciurilor(lista, nrteams, out, &top, &runda);
+  }
+  if (task[3] == 1) {
+    BST *root = NULL;
+    while (top != NULL) {
+      root = insert(root, top->val);
+      top = top->next;
+    }
+    fprintf(out, "\r\nTOP 8 TEAMS:\r\n");
+    afisareBSTDesc(root, out, runda, &topTeams);
+    while (topTeams != NULL) {
+      push(&top, topTeams->val);
+      topTeams = topTeams->next;
+    }
+  }
+return 0;}
