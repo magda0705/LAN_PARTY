@@ -70,3 +70,23 @@ void afisareBSTDesc(BST *, FILE *, int, Stack **);
 BST *insert(BST *, team);
 void programarea_meciurilor(Node *, int, FILE *, Stack **, int *);
 
+//structura pentru definirea AVL
+typedef struct AVLNode {
+  int height;
+  float score;
+  team val;
+  struct AVLNode *left;
+  struct AVLNode *right;
+} AVLNode;
+
+AVLNode *insertAVLNode(AVLNode *node, team val);
+void printAVL(AVLNode *root, FILE *);
+
+void freePlayer(player);
+void freeTeam(team);
+void freeList(Node *);
+void freeQueue(Queue *);
+void freeStack(Stack *);
+void freeBST(BST *);
+void freeAVL(AVLNode *);
+void freeAllMemory(Node *, Queue *, Stack *, BST *, AVLNode *);

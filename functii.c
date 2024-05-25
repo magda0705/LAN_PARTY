@@ -313,3 +313,173 @@ BST *insert(BST *node, team val) {
   return node;
 }
 
+//functie care creaza un nou nod pentru AVL
+AVLNode *creareAVLNode(team val) {
+  AVLNode *node = (AVLNode *)malloc(sizeof(AVLNode));
+
+  node->val = val;
+  node->score = medie_echipe(val);
+  node->left = node->right = NULL;
+  node->height = 1;
+  return node;
+}
+
+//functie care returneaza inaltimea unui nod
+int height(AVLNode *node) { return (node == NULL) ? 0 : node->height; }
+
+//functie care calculeaza factorul de echilibru al unui nod
+int getBalance(AVLNode *node) {
+  if (node == NULL) return 0;
+  return height(node->left) - height(node->right);
+}
+
+AVLNode *rightRotate(AVLNode *y) {
+  AVLNode *x = y->left;
+  AVLNode *T2 = x->right;
+
+  x->right = y;
+  y->left = T2;
+
+  y->height = 1 + (height(y->left) > height(y->right) ? height(y->left)
+                                                      : height(y->right));
+  x->height = 1 + (height(x->left) > height(x->right) ? height(x->left)
+                                                      : height(x->right));
+
+  return x;
+}
+
+//functie care roteste la dreapta in AVL
+AVLNode *leftRotate(AVLNode *x) {
+  AVLNode *y = x->right;
+  AVLNode *T2 = y->left;
+
+  y->left = x;
+  x->right = T2;
+
+  x->height = 1 + (height(x->left) > height(x->right) ? height(x->left)
+                                                      : height(x->right));
+  y->height = 1 + (height(y->left) > height(y->right) ? height(y->left)
+                                                      : height(y->right));
+
+  return y;
+}
+
+//functie care insereaza un nou nod in AVL si il echilibreaza
+AVLNode *insertAVLNode(AVLNode *node, team val) {
+  if (node == NULL) return creareAVLNode(val);
+
+  float score = medie_echipe(val);
+
+  if (score > node->score)
+    node->left = insertAVLNode(node->left, val);
+  else if (score < node->score)
+    node->right = insertAVLNode(node->right, val);
+  else {
+    if (strcmp(val.numele_echipei, node->val.numele_echipei) > 0)
+      node->left = insertAVLNode(node->left, val);
+    else
+      node->right = insertAVLNode(node->right, val);
+  }
+
+  node->height =
+      1 + (height(node->left) > height(node->right) ? height(node->left)
+                                                    : height(node->right));
+
+  int balance = getBalance(node);
+
+  if (balance > 1 && score > node->left->score) return rightRotate(node);
+
+  if (balance < -1 && score < node->right->score) return leftRotate(node);
+
+  if (balance > 1 && score < node->left->score) {
+    node->left = leftRotate(node->left);
+    return rightRotate(node);
+  }
+
+  if (balance < -1 && score > node->right->score) {
+    node->right = rightRotate(node->right);
+    return leftRotate(node);
+  }
+
+  return node;
+}
+
+//functie pentru afisare AVL
+void printAVL(AVLNode *root, FILE *f) {
+  fprintf(f, "\r\nTHE LEVEL 2 TEAMS ARE:\r\n");
+  fprintf(f, "%s\r\n", root->left->left->val.numele_echipei);
+  fprintf(f, "%s\r\n", root->left->right->val.numele_echipei);
+  fprintf(f, "%s\r\n", root->right->left->val.numele_echipei);
+  fprintf(f, "%s\r\n", root->right->right->val.numele_echipei);
+}
+
+//functii pentru eliberarea memoriei
+void freePlayer(player p) {
+  free(p.nume);
+  free(p.prenume);
+}
+
+void freeTeam(team t) {
+  for (int i = 0; i < t.nr_jucatori; i++) {
+    freePlayer(t.jucatori[i]);
+  }
+  free(t.jucatori);
+  free(t.numele_echipei);
+}
+
+void freeList(Node *head) {
+  Node *temp;
+  while (head != NULL) {
+    temp = head;
+    head = head->next;
+    freeTeam(temp->val);
+    free(temp);
+  }
+}
+
+void freeQueue(Queue *q) {
+  while (q->front != NULL) {
+    Node *temp = q->front;
+    q->front = q->front->next;
+    freeTeam(temp->val);
+    free(temp);
+  }
+  free(q);
+}
+
+void freeStack(Stack *top) {
+  Stack *temp;
+  while (top != NULL) {
+    temp = top;
+    top = top->next;
+    freeTeam(temp->val);
+    free(temp);
+  }
+}
+
+void freeBST(BST *root) {
+  if (root == NULL) return;
+  freeBST(root->left);
+  freeBST(root->right);
+  freeTeam(root->val);
+  free(root);
+}
+
+void freeAVL(AVLNode *root) {
+  if (root == NULL) return;
+  freeAVL(root->left);
+  freeAVL(root->right);
+  freeTeam(root->val);
+  free(root);
+}
+
+// functie care contine toate functiile de eliberare a memoriei
+void freeAllMemory(Node *listHead, Queue *queue, Stack *stack, BST *bstRoot,
+                   AVLNode *avlRoot) {
+  freeList(listHead);
+  freeQueue(queue);
+  freeStack(stack);
+  freeBST(bstRoot);
+  freeAVL(avlRoot);
+}
+

@@ -39,4 +39,18 @@ int main(int argc, char *argv[])
       topTeams = topTeams->next;
     }
   }
-return 0;}
+
+  if (task[4] == 1) {
+    AVLNode *root = NULL;
+    while (top != NULL) {
+      root = insertAVLNode(root, top->val);
+      top = top->next;
+    }
+    printAVL(root, out);
+  }
+
+   //eliberarea memoriei
+  void freeAllMemory(listHead, queue, stack, bstRoot, avlRoot);
+  return 0;
+}
+
