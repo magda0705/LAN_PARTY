@@ -29,3 +29,7 @@ Node *createList(FILE *, int);
 team data_team(FILE *file);
 player data_player(FILE *file);
 void afisare(Node *head, FILE *file);
+int valoare_n(int);
+float medie_echipe(team);
+void deleteNode(Node **, float);
+void reducere_echipe(Node **, int);
